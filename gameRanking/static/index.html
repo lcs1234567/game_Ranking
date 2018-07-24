@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>评论标注</title>
+<meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no'/>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style type="text/css">
+    .img-responsive{
+        display: inline-block;
+        height: 96px;
+        max-width: 96px;
+      }
+</style>
+</head>
+<body>
+    <div class="container" id="app">
+        <table class="table table-striped table-bordered">
+            <!-- <caption>游戏排行榜</caption> -->
+            <button v-on:click="change_type('s_lcs_game_ranking_by_download')" type="button" class="btn" v-bind:class="{'btn-primary': 1 == 0}">下载榜</button>
+            <button v-on:click="change_type('s_lcs_game_ranking_by_total')" type="button" class="btn" v-bind:class="{'btn-primary': 1 == 0}">热门榜</button>
+            <button v-on:click="change_type('s_lcs_game_ranking_by_time')" type="button" class="btn" v-bind:class="{'btn-primary': 1 == 0}">新游榜</button>
+            <button v-on:click="change_type('s_lcs_game_ranking_by_score')" type="button" class="btn" v-bind:class="{'btn-primary': 1 == 0}">好评榜</button> 
+            <button v-on:click="change_type('s_lcs_game_ranking_by_compre')" type="button" class="btn" v-bind:class="{'btn-primary': 1 == 0}">综合热度榜</button>            
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>game_logo_url</th>
+                    <th>game_name</th>
+                    <th>source</th>
+                    <th>score</th>
+                    <th>tags</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in msgs">
+                    <td>{{item.id}}</td>
+                    <td><img class="img-responsive" v-bind:src='item.game_logo_url'></td>
+                    <td>{{item.game_name}}</td>
+                    <td>{{item.source}}</td>
+                    <td>{{item.score}}</td>
+                    <td>{{item.tags}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <button v-on:click="first_pages()" type="button" class="btn btn-primary">首页</button>    
+        <button v-on:click="last_pages()" type="button" class="btn btn-primary">上一页</button>
+        <button v-on:click="next_pages()" type="button" class="btn btn-primary">下一页</button>
+        <br/>
+        <br/>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    
+    <script>
+        const getURLParameters = function(){
+            if(window.location.search == ''){
+                return {}
+            }else{
+                url = document.location.toString()
+                // 正则：
+                return url.match(/([^?=&]+)(=([^&]*))/g).reduce((a, v) => ((a[v.slice(0, v.indexOf('='))] = v.slice(v.indexOf('=') + 1)), a), {});
+            }    
+        };
+        var app = new Vue({
+            el: '#app',
+            data: {
+                msgs: []
+            },
+            methods:{
+                change_type: function(table_name){
+                    that=this
+                    begin_id = 1
+                    offset =  9
+                    this.fill_comment(table_name, begin_id, offset)
+                },
+                fill_comment: function(table_name, begin_id = 0, offset){
+                    that=this
+                    comment_url = '/comment/' +  table_name + '/' + begin_id + '/' + offset
+                    axios.get(comment_url).then(
+                        function(response){
+                            if(response.data.length != 0){
+                                that.msgs = response.data
+                                begin_id = that.msgs[0].id
+                                window.history.pushState('', '', '?table_name='+ table_name +'&begin_id=' + begin_id + '&offset=' + offset)
+                            }
+
+                        }
+                    ).catch(function (error) {
+                            console.log(error);
+                    })
+                },
+                last_comment: function(table_name, end_id, offset=9){
+                    that=this
+                    comment_url = '/last_comment/' +  table_name + '/' + end_id + '/' + offset
+                    axios.get(comment_url).then(
+                        function(response){
+                           if(response.data.length != 0){
+                                that.msgs = response.data;
+                                begin_id = that.msgs[0].id
+                                window.history.pushState('', '', '?table_name='+ table_name +'&begin_id=' + begin_id + '&offset=' + offset)
+                           }
+
+                        }
+                    ).catch(function (error) {
+                            console.log(error);
+                    })
+                },
+                first_pages:function(){
+                    that=this
+                    begin_id = 1
+                    offset =  9;
+                    var d=getURLParameters();
+                    table_name = d.table_name
+                    this.fill_comment(table_name, begin_id, offset)
+                    
+                },
+                last_pages: function(){
+                    that = this
+                    end_id = this.msgs[0].id - 1
+                    var d=getURLParameters();
+                    table_name = d.table_name
+                    console.log(end_id + table_name)
+                    this.last_comment(table_name, end_id, 9)
+                },
+                next_pages: function(){
+                    that=this
+                    // mags 
+                    begin_id = this.msgs[this.msgs.length - 1].id + 1
+                    offset =  9;
+                    var d=getURLParameters();
+                    table_name = d.table_name
+                    this.fill_comment(table_name, begin_id, offset)
+                }
+            }
+        });
+        // 页面刷新时 会运行以下代码
+        d=getURLParameters();
+        if(d.table_name){
+            table_name = d.table_name;
+        }else{
+            table_name = 's_lcs_game_ranking_by_download';
+        }
+        if(d.begin_id){
+            begin_id = d.begin_id;
+        }else{
+            begin_id = 1;
+        }
+        if(d.offset){
+            offset = d.offset;
+        }else{
+            offset =  9;
+        }
+        app.fill_comment(table_name, begin_id, offset);
+    </script>
+</body>
+</html>
