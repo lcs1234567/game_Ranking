@@ -11,7 +11,7 @@ import pymysql
 def get_comment(fields, table_name, index1, index2):
     fs = ",".join(fields)             
     sql = "SELECT %s FROM %s WHERE  id >= %s limit %s" % (fs, table_name, index1, index2)
-    conn = pymysql.connect(host='127.0.0.1',port=3306,user='root',password='eXYhzAWjyvy8grwM',db='game_source',charset='utf8mb4')
+    conn = pymysql.connect(host='127.0.0.1',port=3306,user='root',password='eXYhzAWjyvy8grwM',db='game_process',charset='utf8mb4')
     # 创建mysql 游标
     cursor = conn.cursor()  
     cursor.execute(sql)
@@ -25,7 +25,7 @@ def get_comment(fields, table_name, index1, index2):
 def last_comment(fields, table_name, index1, index2):
     fs = ",".join(fields)             
     sql = "select * from (SELECT %s FROM %s WHERE id <= %s order by id desc limit %s) as a order by a.id" % (fs, table_name, index1, index2)
-    conn = pymysql.connect(host='127.0.0.1',port=3306,user='root',password='eXYhzAWjyvy8grwM',db='game_source',charset='utf8mb4')
+    conn = pymysql.connect(host='127.0.0.1',port=3306,user='root',password='eXYhzAWjyvy8grwM',db='game_process',charset='utf8mb4')
     # 创建mysql 游标
     cursor = conn.cursor()
     cursor.execute(sql)
