@@ -1,7 +1,7 @@
 #### gameRanking_python 
 
 1. python 项目结构
-![image](image/project_constr.png)
+  - ![image](image/project_constr.png)
   - utils 一些固定操作如，数据库读写操作 db.py
   - pretreatment 预处理函数，如去除标点符号、时间戳转换等
   - feature  数据集特征提取，如game 下载量、评分人数、发行时间等指标
@@ -26,5 +26,5 @@
       - 参考程序员问答网站对 问题的热度计算，进行排行
 3. 相关算法
   - 贝叶斯平均
-![image](image/贝叶斯平均.png)
+  - ![image](image/贝叶斯平均.png)
   - 热度计算公式 
